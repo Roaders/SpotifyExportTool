@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spotify Playlist Export Helper</title>
+
+    <!--- Bootstrap --->
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Spotify Playlist Export Helper</h1>
+
+    <ul>
+        <li>Select all track in Spotify that you want to export</li>
+        <li>Copy the tracks (ctrl-c)</li>
+        <li>Paste the tracks below:</li>
+    </ul>
+
+    <form>
+        <div class="form-group">
+            <label for="trackListInput">Track list</label>
+            <textarea
+                    class="form-control"
+                    id="trackListInput"
+                    placeholder="Paste tracks here..."
+                    rows="20"
+            ></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="trackListResults">Results</label>
+            <textarea
+                    class="form-control"
+                    id="trackListResults"
+                    placeholder="Paste tracks here..."
+                    rows="20"
+            ></textarea>
+        </div>
+
+    </form>
+
+</div>
+
+</body>
+</html>
