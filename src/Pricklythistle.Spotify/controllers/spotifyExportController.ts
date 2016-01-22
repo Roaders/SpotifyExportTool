@@ -75,9 +75,10 @@ module Pricklythistle.Spotify.Controllers {
             Rx.Observable.fromArray<ITrackIdentifier>( this._allTracks )
                 .pluck<string>( "id" )
                 .distinct()
+                .concatMap( ( id, index ) => Rx.Observable.interval( 50 ).take( 1 ).map( () => { return id } ) )
                 .flatMap(
                     ( trackId ) => this.spotifyService.lookupTrack( trackId ).
-                        catch( ( error ) => this.handleError( error ) ))
+                    catch( ( error ) => this.handleError( error ) ))
                 .subscribe(
                     ( result ) => this.handleTrackLookupResult( result ),
                     ( error ) => this.handleError( error ),
@@ -104,7 +105,7 @@ module Pricklythistle.Spotify.Controllers {
         }
 
         private handleTrackLookupResult( track: ITrackDetails ): void{
-            console.log( `Track loaded: ${track.name}` );
+            //console.log( `Track loaded: ${track.name}` );
 
             this._results.push( track );
 
