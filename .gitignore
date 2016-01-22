@@ -1,2 +1,6 @@
 app.js
 app.js.map
+node_modules/
+src/Pricklythistle.Spotify/services/spotifyService.js
+src/Pricklythistle.Spotify/services/*.js.map
+typings/

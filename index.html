@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="spotifyExportApp">
 <head>
     <meta charset="UTF-8">
     <title>Spotify Playlist Export Helper</title>
@@ -14,10 +14,23 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Angular -->
+
+    <script src="node_modules/angular/angular.js"></script>
+
+    <!-- Rx -->
+
+    <script src="node_modules/rx/dist/rx.all.js"></script>
+    <script src="node_modules/rx-angular/dist/rx.angular.js"></script>
+
+    <!-- App -->
+
+    <script src="app.js"></script>
+
 </head>
 <body>
 
-<div class="container">
+<div class="container" ng-controller="spotifyExportController as controller">
 
     <h1>Spotify Playlist Export Helper</h1>
 
@@ -29,22 +42,24 @@
 
     <form>
         <div class="form-group">
-            <label for="trackListInput">Track list</label>
+            <label for="trackListInput">Track list {{controller.importCount}}</label>
             <textarea
                     class="form-control"
                     id="trackListInput"
                     placeholder="Paste tracks here..."
-                    rows="20"
+                    rows="10"
+                    ng-model="controller.importList"
             ></textarea>
         </div>
 
         <div class="form-group">
-            <label for="trackListResults">Results</label>
+            <label for="trackListResults">Results {{controller.resultCount}}</label>
             <textarea
                     class="form-control"
                     id="trackListResults"
-                    placeholder="Paste tracks here..."
-                    rows="20"
+                    rows="10"
+                    ng-model="controller.exportList"
+                    readonly
             ></textarea>
         </div>
 

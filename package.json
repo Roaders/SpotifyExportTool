@@ -1,0 +1,31 @@
+{
+  "name": "SpotifyExportTool",
+  "version": "1.0.0",
+  "description": "A tool to help export playlists from Spotify",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Roaders/SpotifyExportTool.git"
+  },
+  "keywords": [
+    "Spotify",
+    "Typescript",
+    "Angular"
+  ],
+  "author": "Giles Roadnight",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Roaders/SpotifyExportTool/issues"
+  },
+  "homepage": "https://github.com/Roaders/SpotifyExportTool",
+  "dependencies": {
+    "angular": "^1.4.9",
+    "rx": "2.2.28",
+    "rx-angular": "0.0.14",
+    "tsd": "^0.6.5",
+    "typescript": "1.6.2"
+  }
+}

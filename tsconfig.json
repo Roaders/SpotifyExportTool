@@ -7,6 +7,7 @@
     "diagnostics": true
   },
   "files": [
-    "src/app.ts"
+    "src/app.ts",
+    "typings/tsd.d.ts"
   ]
 }
