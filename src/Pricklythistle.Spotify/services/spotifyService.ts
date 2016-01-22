@@ -13,7 +13,7 @@ module Pricklythistle.Spotify.Service {
 
     export interface ITrackError{
         id: string;
-        error: any;
+        error: IHttpPromiseCallbackArg<any>;
     }
 
     export class SpotifyService {

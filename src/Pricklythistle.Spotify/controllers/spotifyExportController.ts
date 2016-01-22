@@ -32,7 +32,7 @@ module Pricklythistle.Spotify.Controllers {
 
         private _allTracks: ITrackIdentifier[];
         private _results: ITrackDetails[];
-        private _errors: {[id: string]: any};
+        private _errors: {[id: string]: ITrackError};
 
         //  Properties
 
@@ -75,7 +75,9 @@ module Pricklythistle.Spotify.Controllers {
             Rx.Observable.fromArray<ITrackIdentifier>( this._allTracks )
                 .pluck<string>( "id" )
                 .distinct()
-                .flatMap( ( trackId ) => this.spotifyService.lookupTrack( trackId ) )
+                .flatMap(
+                    ( trackId ) => this.spotifyService.lookupTrack( trackId ).
+                        catch( ( error ) => this.handleError( error ) ))
                 .subscribe(
                     ( result ) => this.handleTrackLookupResult( result ),
                     ( error ) => this.handleError( error ),
@@ -93,9 +95,8 @@ module Pricklythistle.Spotify.Controllers {
                     exportString += `${matchingDetails[0].name}\n`;
                 } else if( this._errors[ trackIdentifier.id ] ) {
                     let error: ITrackError = this._errors[ trackIdentifier.id ];
-                    let errorString: string = this._errors[ trackIdentifier.id ].toString();
 
-                    exportString += `Error: ${this._errors[ trackIdentifier.id ].toString()}\n`;
+                    exportString += `Error for ${error.id}: ${error.error.statusText}\n`;
                 }
             } );
 
@@ -111,9 +112,11 @@ module Pricklythistle.Spotify.Controllers {
         }
 
         private handleError( error: ITrackError ): Rx.Observable<ITrackDetails> {
-            console.log( `Error ${error.toString()}` );
+            if( error.error ){
+                console.log( `Error ${error.error.statusText}` );
+            }
 
-            this._errors[ error.id ] = error.error;
+            this._errors[ error.id ] = error;
 
             this.updateExportList();
 
