@@ -6,6 +6,11 @@ module Pricklythistle.Spotify.Service {
 
     import IHttpPromiseCallbackArg = angular.IHttpPromiseCallbackArg;
 
+    export interface ITrackResult {
+        originalId: string;
+        details: ITrackDetails;
+    }
+
     export interface ITrackDetails {
         name : string;
         id: string;
@@ -16,20 +21,58 @@ module Pricklythistle.Spotify.Service {
         error: IHttpPromiseCallbackArg<any>;
     }
 
+    interface INumberOfErrors{
+        errorCount: number;
+        error?:  IHttpPromiseCallbackArg<any>;
+    }
+
     export class SpotifyService {
 
         constructor( private $http: ng.IHttpService) {
         }
 
-        lookupTrack( trackId: string ) : Rx.Observable<ITrackDetails> {
-            //console.log( `Looking up track: ${trackId}` );
+        lookupTrack( trackId: string ) : Rx.Observable<ITrackResult> {
+            //console.log( `Loading track: ${trackId}` );
 
-            return Rx.Observable.fromPromise<IHttpPromiseCallbackArg<ITrackDetails>>(this.$http.get( `https://api.spotify.com/v1/tracks/${trackId}` ))
-                .retry(3)
-                .catch( (error) => {
-                    return Rx.Observable.throw<ITrackDetails>( <ITrackError>{ id: trackId, error: error } );
+            return this.getObservable( trackId )
+                .retryWhen( (errors) => {
+                    return errors.scan<INumberOfErrors>( ( accumulatedErrors, error ) => this.countToThreeErrors( accumulatedErrors, error ), {errorCount: 0} )
+                        .flatMap( ( accumulatedErrors ) => this.delayRetry( accumulatedErrors ) );
                 } )
-                .pluck<ITrackDetails>( "data" );
+                .catch( ( error ) => {
+                    return Rx.Observable.throw( { id: trackId, error: error } )
+                } )
+                .pluck<ITrackDetails>( "data" )
+                .map<ITrackResult>( ( trackDetails ) => {return <ITrackResult>{ originalId: trackId, details: trackDetails }} );
+        }
+
+        private delayRetry( accumulatedErrors: INumberOfErrors ): Rx.Observable<any> {
+            let delay: number = accumulatedErrors.error.status == 429 ? 2000 : 50;
+            console.log( `Error received with status ${accumulatedErrors.error.statusText} retrying in ${delay}ms `);
+            return Rx.Observable.just(true).delay( delay );
+        }
+
+        private countToThreeErrors( accumulatedErrors: INumberOfErrors, error: IHttpPromiseCallbackArg<any> ): INumberOfErrors {
+            let errorCount: number = accumulatedErrors.errorCount;
+
+            if( errorCount > 3 )
+            {
+                console.log( `Too many errors received for call (${errorCount}). Not trying again.` );
+                throw( error );
+            }
+
+            return {errorCount: errorCount+ 1, error: error };
+        }
+
+        private getObservable( trackId: string ): Rx.Observable<IHttpPromiseCallbackArg<ITrackDetails>> {
+
+            return Rx.Observable.just(trackId)
+                .flatMap( () => {
+                    //console.log( `creating observable for track ${trackId})` );
+                    return Rx.Observable.fromPromise<IHttpPromiseCallbackArg<ITrackDetails>>(
+                        this.$http.get(`https://api.spotify.com/v1/tracks/${trackId}`)
+                    );
+                } );
         }
     }
 }
