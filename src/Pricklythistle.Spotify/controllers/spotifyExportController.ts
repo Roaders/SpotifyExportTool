@@ -32,7 +32,7 @@ module Pricklythistle.Spotify.Controllers {
 
         private _allTracks: ITrackIdentifier[];
         private _results: ITrackDetails[];
-        private _errors: {[id: string]: ITrackError};
+        private _errors: ITrackError[];
 
         //  Properties
 
@@ -62,23 +62,31 @@ module Pricklythistle.Spotify.Controllers {
             return this._results ? this._results.length.toString() : "";
         }
 
+        get errorCount(): string {
+            return this._errors && this._errors.length > 0 ? this._errors.length.toString() : "";
+        }
+
         //  Private Functions
 
         private loadTracks( trackList: string ): void {
             this._allTracks = this.parseTrackIds( trackList );
             this._exportList = "";
             this._results = [];
-            this._errors = {};
+            this._errors = [];
 
             console.time( "Load Track Details" );
 
             Rx.Observable.fromArray<ITrackIdentifier>( this._allTracks )
                 .pluck<string>( "id" )
                 .distinct()
-                .concatMap( ( id, index ) => Rx.Observable.interval( 50 ).take( 1 ).map( () => { return id } ) )
-                .flatMap(
-                    ( trackId ) => this.spotifyService.lookupTrack( trackId ).
-                    catch( ( error ) => this.handleError( error ) ))
+                .map( trackId => {
+                        return Rx.Observable.defer<ITrackDetails>( () => {
+                            return this.spotifyService.lookupTrack(trackId).
+                                catch( error => this.handleError(error) )
+                        } )
+                    }
+                )
+                .merge(6)
                 .subscribe(
                     ( result ) => this.handleTrackLookupResult( result ),
                     ( error ) => this.handleError( error ),
@@ -90,14 +98,16 @@ module Pricklythistle.Spotify.Controllers {
             var exportString: string = "";
 
             this._allTracks.forEach( ( trackIdentifier ) => {
-                let matchingDetails: ITrackDetails[] = this._results.filter( ( details ) => { return details.id === trackIdentifier.id } );
+                let matchingDetails: ITrackDetails[] = this._results.filter( details => { return details.id === trackIdentifier.id } );
 
                 if( matchingDetails.length > 0 ) {
                     exportString += `${matchingDetails[0].name}\n`;
                 } else if( this._errors[ trackIdentifier.id ] ) {
-                    let error: ITrackError = this._errors[ trackIdentifier.id ];
+                    let matchingErrors: ITrackError[] = this._errors.filter( error => { return error.id === trackIdentifier.id } );
 
-                    exportString += `Error for ${error.id}: ${error.error.statusText}\n`;
+                    if( matchingErrors.length > 0 ) {
+                        exportString += `Error for ${matchingErrors[0].id}: ${matchingErrors[0].error.statusText}\n`;
+                    }
                 }
             } );
 
@@ -117,7 +127,7 @@ module Pricklythistle.Spotify.Controllers {
                 console.log( `Error ${error.error.statusText}` );
             }
 
-            this._errors[ error.id ] = error;
+            this._errors.push( error );
 
             this.updateExportList();
 
