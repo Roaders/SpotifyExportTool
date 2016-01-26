@@ -2,6 +2,8 @@
  * Created by Giles on 22/01/2016.
  */
 
+///<reference path="../../../typings/angularjs/angular.d.ts" />
+
 module Pricklythistle.Spotify.Controllers {
 
     import SpotifyService = Pricklythistle.Spotify.Service.SpotifyService;
@@ -98,15 +100,17 @@ module Pricklythistle.Spotify.Controllers {
                         catch( error => this.handleError(error) )
                     }
                 )
-                .merge(6)
-                .subscribe(
+                .merge(6 )
+                .safeApply(
+                    this.$rootScope,
                     ( result ) => this.handleTrackLookupResult( result ),
                     ( error ) => this.handleError( error ),
-                    () => this.handleComplete()
-                );
+                    () => this.handleComplete())
+                .subscribe();
         }
 
-        private updateExportList( final: boolean = false): void {
+        private updateExportList(): void {
+            console.log( "updateExportList" );
             var exportString: string = "";
             var currentResultCount: number = 0;
             var currentErrorCount: number = 0;
@@ -129,16 +133,14 @@ module Pricklythistle.Spotify.Controllers {
             this._errorCount = currentErrorCount > 0 ? currentErrorCount.toString() : "";
 
             this._exportList = exportString;
-
-            this.$rootScope.$apply();
         }
 
         private handleTrackLookupResult( trackResults: ITrackResult ): void{
-            //console.log( `Track loaded: ${track.name} (${track.id})` );
 
             for(var index: number = 0; index < trackResults.originalIds.length; index ++){
                 var originalId: string = trackResults.originalIds[index];
                 var trackDetails: ITrackDetails = trackResults.details[index];
+                console.log( `Track loaded: ${trackDetails.name} (${trackDetails.id})` );
 
                 this._resultLookup[originalId] = trackDetails;
             }
@@ -152,7 +154,7 @@ module Pricklythistle.Spotify.Controllers {
                 console.log( `Error ${error.error.statusText} in controller` );
 
                 this._errorLookup[trackId] = error;
-            } )
+            } );
 
             this.updateExportList();
 
@@ -161,7 +163,7 @@ module Pricklythistle.Spotify.Controllers {
 
         private handleComplete(): void {
 
-            this.updateExportList(true);
+            this.updateExportList();
 
             console.log(`${this._allTracks.length} loaded`);
             console.timeEnd( "Load Track Details" );

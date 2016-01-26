@@ -9,6 +9,7 @@
   "files": [
     "src/app.ts",
     "typings/tsd.d.ts",
-    "node_modules/rx/ts/rx.all.d.ts"
+    "node_modules/rx/ts/rx.all.d.ts",
+    "modules/rx-angular/ts/rx.angular.d.ts"
   ]
 }
