@@ -7,8 +7,12 @@ module Pricklythistle.Spotify.Service {
     import IHttpPromiseCallbackArg = angular.IHttpPromiseCallbackArg;
 
     export interface ITrackResult {
-        originalId: string;
-        details: ITrackDetails;
+        originalIds: string[];
+        details: ITrackDetails[];
+    }
+
+    interface ITrackListResult{
+        tracks: ITrackDetails[];
     }
 
     export interface ITrackDetails {
@@ -17,7 +21,7 @@ module Pricklythistle.Spotify.Service {
     }
 
     export interface ITrackError{
-        id: string;
+        ids: string[];
         error: IHttpPromiseCallbackArg<any>;
     }
 
@@ -31,19 +35,20 @@ module Pricklythistle.Spotify.Service {
         constructor( private $http: ng.IHttpService) {
         }
 
-        lookupTrack( trackId: string ) : Rx.Observable<ITrackResult> {
+        lookupTracks( trackIds: string[] ) : Rx.Observable<ITrackResult> {
             //console.log( `Loading track: ${trackId}` );
 
-            return this.getObservable( trackId )
+            return this.getObservable( trackIds )
                 .retryWhen( (errors) => {
                     return errors.scan<INumberOfErrors>( ( accumulatedErrors, error ) => this.countToThreeErrors( accumulatedErrors, error ), {errorCount: 0} )
                         .flatMap( ( accumulatedErrors ) => this.delayRetry( accumulatedErrors ) );
                 } )
                 .catch( ( error ) => {
-                    return Rx.Observable.throw( { id: trackId, error: error } )
+                    return Rx.Observable.throw( { ids: trackIds, error: error } )
                 } )
-                .pluck<ITrackDetails>( "data" )
-                .map<ITrackResult>( ( trackDetails ) => {return <ITrackResult>{ originalId: trackId, details: trackDetails }} );
+                .map<ITrackResult>( ( trackListResult ) => {
+                    return <ITrackResult>{ originalIds: trackIds, details: trackListResult.data.tracks }
+                });
         }
 
         private delayRetry( accumulatedErrors: INumberOfErrors ): Rx.Observable<any> {
@@ -64,13 +69,13 @@ module Pricklythistle.Spotify.Service {
             return {errorCount: errorCount+ 1, error: error };
         }
 
-        private getObservable( trackId: string ): Rx.Observable<IHttpPromiseCallbackArg<ITrackDetails>> {
+        private getObservable( trackIds: string[] ): Rx.Observable<IHttpPromiseCallbackArg<ITrackListResult>> {
 
-            return Rx.Observable.just(trackId)
+            return Rx.Observable.just(trackIds)
                 .flatMap( () => {
                     //console.log( `creating observable for track ${trackId})` );
-                    return Rx.Observable.fromPromise<IHttpPromiseCallbackArg<ITrackDetails>>(
-                        this.$http.get(`https://api.spotify.com/v1/tracks/${trackId}`)
+                    return Rx.Observable.fromPromise<IHttpPromiseCallbackArg<ITrackListResult>>(
+                        this.$http.get(`https://api.spotify.com/v1/tracks?ids=${trackIds.toString()}`)
                     );
                 } );
         }

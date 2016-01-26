@@ -92,12 +92,13 @@ module Pricklythistle.Spotify.Controllers {
             Rx.Observable.fromArray<ITrackIdentifier>( this._allTracks )
                 .pluck<string>( "id" )
                 .distinct()
-                .map( trackId => {
-                    return this.spotifyService.lookupTrack(trackId).
+                .bufferWithCount( 45 )
+                .map( trackIds => {
+                    return this.spotifyService.lookupTracks(trackIds).
                         catch( error => this.handleError(error) )
                     }
                 )
-                .merge(8)
+                .merge(6)
                 .subscribe(
                     ( result ) => this.handleTrackLookupResult( result ),
                     ( error ) => this.handleError( error ),
@@ -119,7 +120,7 @@ module Pricklythistle.Spotify.Controllers {
                     if( this._errorLookup[trackIdentifier.id] ) {
                         currentErrorCount++;
                         let error: ITrackError = this._errorLookup[trackIdentifier.id];
-                        exportString += `Error for ${error.id}: ${error.error.statusText}\n`;
+                        exportString += `Error for ${trackIdentifier.id}: ${error.error.statusText}\n`;
                     }
                 }
             } );
@@ -132,18 +133,26 @@ module Pricklythistle.Spotify.Controllers {
             this.$rootScope.$apply();
         }
 
-        private handleTrackLookupResult( track: ITrackResult ): void{
+        private handleTrackLookupResult( trackResults: ITrackResult ): void{
             //console.log( `Track loaded: ${track.name} (${track.id})` );
 
-            this._resultLookup[track.originalId] = track.details;
+            for(var index: number = 0; index < trackResults.originalIds.length; index ++){
+                var originalId: string = trackResults.originalIds[index];
+                var trackDetails: ITrackDetails = trackResults.details[index];
+
+                this._resultLookup[originalId] = trackDetails;
+            }
 
             this.updateExportList();
         }
 
         private handleError( error: ITrackError ): Rx.Observable<ITrackResult> {
-            console.log( `Error ${error.error.statusText} in controller` );
 
-            this._errorLookup[error.id] = error;
+            error.ids.forEach( (trackId) => {
+                console.log( `Error ${error.error.statusText} in controller` );
+
+                this._errorLookup[trackId] = error;
+            } )
 
             this.updateExportList();
 
