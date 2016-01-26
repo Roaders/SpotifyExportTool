@@ -47,7 +47,7 @@ module Pricklythistle.Spotify.Service {
         }
 
         private delayRetry( accumulatedErrors: INumberOfErrors ): Rx.Observable<any> {
-            let delay: number = accumulatedErrors.error.status == 429 ? 2000 : 50;
+            let delay: number = accumulatedErrors.error.status == 429 ? accumulatedErrors.errorCount * 2000 : 50;
             console.log( `Error received with status ${accumulatedErrors.error.statusText} retrying in ${delay}ms `);
             return Rx.Observable.just(true).delay( delay );
         }
@@ -55,6 +55,12 @@ module Pricklythistle.Spotify.Service {
         private countToThreeErrors( accumulatedErrors: INumberOfErrors, error: IHttpPromiseCallbackArg<any> ): INumberOfErrors {
             let errorCount: number = accumulatedErrors.errorCount;
 
+            if( error.status == 429 ) {
+                if(errorCount > 6) {
+                    console.log( `Too many errors received for call (${errorCount}). Not trying again.` );
+                    throw( error );
+                }
+            }
             if( errorCount > 3 )
             {
                 console.log( `Too many errors received for call (${errorCount}). Not trying again.` );
