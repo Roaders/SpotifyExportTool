@@ -10,7 +10,3 @@ var module: ng.IModule = angular.module( "spotifyExportApp", ['rx'] );
 module.controller( "spotifyExportController", Pricklythistle.Spotify.Controllers.SpotifyExportController );
 
 module.service( "spotifyService", Pricklythistle.Spotify.Service.SpotifyService );
-
-module.run( ["$rootScope", ( $rootScope ) => {
-     Rx.Scheduler.immediate = new Rx.ScopeScheduler( $rootScope );
-}]);
