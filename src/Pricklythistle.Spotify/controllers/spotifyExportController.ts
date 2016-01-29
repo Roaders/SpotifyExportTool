@@ -27,8 +27,7 @@ module Pricklythistle.Spotify.Controllers {
         //TODO: Remove reliance on rootscope
         //TODO: add spinner to index.html
         constructor(
-            private spotifyService: SpotifyService,
-            private $rootScope: ng.IScope
+            private spotifyService: SpotifyService
         ) {
 
         }
@@ -91,7 +90,7 @@ module Pricklythistle.Spotify.Controllers {
             console.log( `Starting load of ${this._allTracks.length}` );
             console.time( "Load Track Details" );
 
-            Rx.Observable.fromArray<ITrackIdentifier>( this._allTracks )
+            Rx.Observable.from<ITrackIdentifier>( this._allTracks )
                 .pluck<string>( "id" )
                 .distinct()
                 .bufferWithCount( 45 )
@@ -101,12 +100,12 @@ module Pricklythistle.Spotify.Controllers {
                     }
                 )
                 .merge(6 )
-                .safeApply(
-                    this.$rootScope,
+                .observeOn( Rx.Scheduler.immediate )
+                .subscribe(
                     ( result ) => this.handleTrackLookupResult( result ),
                     ( error ) => this.handleError( error ),
-                    () => this.handleComplete())
-                .subscribe();
+                    () => this.handleComplete()
+                );
         }
 
         private updateExportList(): void {
