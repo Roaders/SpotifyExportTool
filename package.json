@@ -4,7 +4,8 @@
   "description": "A tool to help export playlists from Spotify",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "node node_modules/tsd/build/cli.js install",
+    "start": "node node_modules/typescript/lib/tsc.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,6 @@
     "rx": "^4.0.7",
     "rx-angular": "^1.1.3",
     "tsd": "^0.6.5",
-    "typescript": "1.6.2"
+    "typescript": "^1.7.5"
   }
 }
