@@ -1,4 +1,6 @@
 # SpotifyExportTool
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/Roaders/SpotifyExportTool.svg)](https://greenkeeper.io/)
 Helps in exporting playlists from Spotify
 
 ### Install
